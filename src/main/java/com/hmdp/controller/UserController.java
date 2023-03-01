@@ -1,21 +1,27 @@
 package com.hmdp.controller;
 
 
+import cn.hutool.core.util.ObjectUtil;
 import com.hmdp.dto.LoginFormDTO;
 import com.hmdp.dto.Register;
 import com.hmdp.dto.Result;
 import com.hmdp.dto.UserDTO;
 import com.hmdp.dto.UserLoginDTO;
+import com.hmdp.entity.User;
 import com.hmdp.entity.UserInfo;
 import com.hmdp.service.IUserInfoService;
 import com.hmdp.service.IUserService;
+import com.hmdp.utils.JwtUtils;
 import com.hmdp.utils.UserHolder;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
+
+import com.hmdp.vo.PermissionCodeVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -121,5 +127,16 @@ public class UserController {
         info.setUpdateTime(null);
         // 返回
         return Result.ok(info);
+    }
+    @GetMapping("/listMenu")
+    public Result  listMenu(HttpServletRequest servletRequest, HttpServletResponse response){
+        String auth = servletRequest.getHeader("auth");
+        User user = JwtUtils.check(auth);
+        if(ObjectUtil.isEmpty(user)){
+            return Result.fail("用户不是工作人员");
+        }
+        PermissionCodeVO permissionCodeVO = userInfoService.listMenu(user);
+        return Result.ok(permissionCodeVO);
+
     }
 }
