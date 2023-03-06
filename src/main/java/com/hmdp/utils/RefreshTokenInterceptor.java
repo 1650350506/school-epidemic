@@ -33,7 +33,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
       throws Exception {
-    String token = request.getHeader("Authorization");
+    String token = request.getHeader("auth");
     if(token==null){
       return true;
     }
@@ -44,7 +44,8 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
     UserDTO userDTO = BeanUtil.fillBeanWithMap(entries, new UserDTO(), false);
     UserHolder.saveUser(userDTO);
     stringRedisTemplate.expire(LOGIN_USER_KEY + token,LOGIN_USER_TTL, TimeUnit.MINUTES);
-    return true;  }
+    return true;
+  }
 
   @Override
   public void afterCompletion(HttpServletRequest request, HttpServletResponse response,

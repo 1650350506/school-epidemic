@@ -1,5 +1,6 @@
 package com.hmdp.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
@@ -11,6 +12,7 @@ import lombok.Data;
  * @Version: 1.0
  */
 @Data
+@TableName("permission_code")
 public class PermissionCode {
     private Long id;
 
@@ -21,4 +23,6 @@ public class PermissionCode {
     private String name;
 
     private Long userId;
+
+    private int isDeleted;
 }

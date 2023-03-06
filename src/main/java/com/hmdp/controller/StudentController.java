@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @Api(value = "学生信息Controller")
-@RequestMapping("student")
+@RequestMapping("/student")
 @Slf4j
 public class StudentController {
 

@@ -31,6 +31,7 @@ public class JwtUtils {
         .withClaim("username", user.getUsername())
         //添加过期时间 exp 也可以添加key为exp valus为到期时间的时间戳和这个效果一样
         .withClaim("password", user.getPassword())
+        .withClaim("id", user.getId())
         .withExpiresAt(instance.getTime());
     // 选择签名算法HMAC256 添加密钥字符串mango（盐）
     String token = builder.sign(Algorithm.HMAC256("cheng"));
@@ -48,10 +49,13 @@ public class JwtUtils {
       //输出存储在Payload中键值对key为id的value 即id
       Claim username = jwt.getClaim("username");
       Claim password = jwt.getClaim("password");
+      Claim id=jwt.getClaim("id");
       String name = String.valueOf(username);
       String word = String.valueOf(password);
+      Long useId = Long.valueOf(String.valueOf(id));
       user.setUsername(name);
       user.setPassword(word);
+      user.setId(useId);
       //token设置过期时间就会有key为exp的键值对 value是到期时间的时间戳
     } catch (TokenExpiredException e) {
       //令牌过期抛出异常
