@@ -29,8 +29,6 @@ public class MvcConfig implements WebMvcConfigurer {
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(new loginInterceptor(stringRedisTemplate))
         .excludePathPatterns(
-            "/shop/**",
-            "/shop-type/**",
             "/upload/**",
             "/blog/hot",
             "/user/code",
@@ -48,6 +46,7 @@ public class MvcConfig implements WebMvcConfigurer {
     registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**")
         .order(0);
   }
+   @Override
    public void addCorsMappings(CorsRegistry registry) {
     //跨域问题 解决
     registry.addMapping("/**")
@@ -59,7 +58,7 @@ public class MvcConfig implements WebMvcConfigurer {
             "access-control-allow-origin",
             "access-control-max-age",
             "X-Frame-Options")
-        .allowCredentials(false).maxAge(3600);
+        .allowCredentials(true).maxAge(3600);
     WebMvcConfigurer.super.addCorsMappings(registry);
   }
 }

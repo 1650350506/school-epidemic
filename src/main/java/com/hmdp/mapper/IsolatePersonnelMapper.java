@@ -36,8 +36,7 @@ public interface IsolatePersonnelMapper extends BaseMapper<IsolatePersonnel> {
    * @Param: []
    * @Return: java.lang.Integer
    */
-  @Select("select count(id) from isolate_personnel where to_char(create_date,'dd')=to_char((CURRENT_DATE-interval '1 day'),'dd')  AND is_delete = 0 and \"state\" = 1\n"
-      + "group by to_char(create_date,'yyyy-mm-dd')\n")
+  @Select("select count(id) from isolate_personnel where to_days(now()) - to_days(startTime) <= 1  AND is_delete = 0 and state= 1 ")
   Integer addIsolateAnaly();
 
   /**
@@ -47,8 +46,7 @@ public interface IsolatePersonnelMapper extends BaseMapper<IsolatePersonnel> {
    * @Param: []
    * @Return: java.lang.Integer
    */
-  @Select("select count(id) from isolate_personnel where to_char(create_date,'dd')=to_char((CURRENT_DATE-interval '1 day'),'dd')  AND is_delete = 0 and \"state\" = 2\n"
-      + "group by to_char(create_date,'yyyy-mm-dd')\n ")
+  @Select("select count(id) from isolate_personnel where to_days(now()) - to_days(startTime) <= 1  AND is_delete = 0 and state= 2")
   Integer relieveIsolateAnaly();
 
   /**
@@ -58,7 +56,7 @@ public interface IsolatePersonnelMapper extends BaseMapper<IsolatePersonnel> {
    * @Param: [command]
    * @Return: java.util.List<java.util.Map < java.lang.String, java.lang.Integer>>
    */
-  @Select(" SELECT count(code) FROM isolate_personnel WHERE state = 1 and to_char(start_time,'yyyy-MM-dd') = #{command}")
+  @Select(" SELECT count(code) FROM isolate_personnel WHERE state = 1 and  startTime like concat(#{command},'%')")
   Integer IsolateAnaly(String command);
 
   /**
@@ -68,11 +66,11 @@ public interface IsolatePersonnelMapper extends BaseMapper<IsolatePersonnel> {
    * @Param: [command]
    * @Return: java.lang.Integer
    */
-//  @SqlParser(filter = true)
-//  @Select("select count(*) \n"
-//      + "      from isolate_personnel\n"
-//      + "       where   state = 1  AND is_delete = 0 and isolate_personnel.code like Concat ('19',#{command},'%')\n")
-//  Integer countQuarantine(String command);
+
+  @Select("select count(*) \n"
+      + "      from isolate_personnel\n"
+      + "       where   state = 1  AND is_delete = 0 and isolate_personnel.code like Concat ('19',#{command},'%')\n")
+  Integer countQuarantine(String command);
 
   /**
    * @Description: 查询出隔离人员总人数

@@ -25,4 +25,6 @@ public class PermissionCode {
     private Long userId;
 
     private int isDeleted;
+
+    private String title;
 }

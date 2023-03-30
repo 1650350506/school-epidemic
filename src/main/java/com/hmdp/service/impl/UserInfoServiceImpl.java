@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hmdp.entity.PermissionCode;
 import com.hmdp.entity.User;
-import com.hmdp.entity.UserInfo;
-import com.hmdp.mapper.UserInfoMapper;
 import com.hmdp.service.IUserInfoService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.service.PermissionCodeService;
 import com.hmdp.vo.PermissionCodeVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +21,7 @@ import java.util.List;
  * @since 2021-12-24
  */
 @Service
-public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> implements IUserInfoService {
+public class UserInfoServiceImpl  implements IUserInfoService {
    @Autowired
     PermissionCodeService permissionCodeService;
     @Override
