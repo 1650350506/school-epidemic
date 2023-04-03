@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
  * @Date: 2022/7/27 14:29
  * @Version: 1.0
  */
-@TableName("class")
+@TableName("studentclass")
 @Data
 @NoArgsConstructor
 @ApiModel("班级实体类")

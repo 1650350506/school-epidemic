@@ -1,5 +1,6 @@
 package com.hmdp.command;
 
+import com.hmdp.dto.GridPageCommand;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
@@ -17,7 +18,7 @@ import lombok.Data;
  */
 @Data
 @ApiModel("隔离人员搜索并分页Command")
-public class IsolatePersonnelQueryCommand  implements Serializable {
+public class IsolatePersonnelQueryCommand  extends GridPageCommand implements Serializable {
 
   @ApiModelProperty("关键词查询")
   private String keyword;

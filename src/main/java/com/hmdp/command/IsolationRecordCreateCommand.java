@@ -1,5 +1,6 @@
 package com.hmdp.command;
 import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
@@ -26,7 +27,7 @@ public class IsolationRecordCreateCommand implements Serializable {
 
   @ApiModelProperty(value = "核酸时间",required = true)
   @NotNull(message = "不能为空")
-  @JSONField(format = "yyyy-MM-dd")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private Timestamp nucleicAcidTime;
 
 

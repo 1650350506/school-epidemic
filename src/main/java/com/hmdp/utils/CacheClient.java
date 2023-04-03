@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class CacheClient {
+public class  CacheClient {
 
   private final StringRedisTemplate stringRedisTemplate;
 

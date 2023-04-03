@@ -1,6 +1,7 @@
 package com.hmdp.command;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
@@ -30,7 +31,7 @@ public class IsolatePersonnelCreateCommand implements Serializable {
   @ApiModelProperty("地址")
   private String address;
 
-  @JSONField(format = "yyyy-MM-dd HH:mm:ss")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   @ApiModelProperty(value = "开始隔离时间", required = true)
   private Timestamp startTime;
 

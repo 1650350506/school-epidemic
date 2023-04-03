@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hmdp.mapper.StudentMapper">
+
+    <select id="selectBaseInformation"
+      resultType="com.hmdp.entity.Student"
+      parameterType="com.hmdp.command.StudentQueryPageBaseCommand">
+        SELECT
+            s.code AS code,
+            s.name AS name,
+            s.class_code AS classCode,
+            s.sex AS sex,
+            s.phone_number AS phoneNumber,
+            s.id_card AS idCard,
+            s.address AS address,
+            s.emergency_contact AS emergencyContact,
+            s.emergency_contact_phone AS emergencyContactPhone,
+            c.risk_level AS riskLevel,
+            (p.name || c.name) AS riskArea,
+            s.create_date
+        FROM
+            ((tb_student s INNER JOIN dept t ON s.dept_code = t.code)
+            INNER JOIN city c ON c.code = (
+                SELECT
+                    code
+                FROM
+                    city
+                WHERE
+                    code IN
+                    (SELECT
+                        unnest(string_to_array(cctr.region,','))
+                    FROM
+                        cross_city_travel_record cctr
+                    WHERE
+                        cctr.code = s.code
+                        AND cctr.is_delete = 0
+                        AND date_part('day', cast(now() as TIMESTAMP)- cast(cctr.create_date as TIMESTAMP)) <![CDATA[ < ]]> 14
+                    UNION
+                    SELECT
+                        unnest(string_to_array(dtr.travel_record,','))
+                    FROM
+                        daily_travel_record dtr
+                    WHERE
+                        dtr.code = s.code
+                        AND dtr.type = 1
+                        AND dtr.is_delete = 0
+                        AND date_part('day', cast(now() as TIMESTAMP)- cast(dtr.create_date as TIMESTAMP)) <![CDATA[ < ]]> 14)
+                ORDER BY risk_level DESC
+                LIMIT 1))
+            INNER JOIN province p ON p.code = c.province_code
+        WHERE
+            s.is_delete = 0 AND
+            t.is_delete = 0
+            <if test="riskLevel != null">
+                AND c.risk_level = #{riskLevel}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (s.name = #{keyword}
+                OR s.code = #{keyword}
+                OR t.name = #{keyword})
+            </if>
+        ORDER BY
+            s.create_date DESC
+    </select>
+
+<!--    AND s.name LIKE CONCAT('%',CONCAT(#{keyword},'%'))-->
+<!--    OR s.code LIKE CONCAT('%',CONCAT(#{keyword},'%'))-->
+<!--    OR t.name LIKE CONCAT('%',CONCAT(#{keyword},'%'))-->
+
+    <select id="getStudentCodeSumList" resultType="java.lang.String">
+        SELECT
+            code
+        FROM
+            cross_city_travel_record
+        UNION
+        SELECT
+            code
+        FROM
+            daily_travel_record
+    </select>
+
+    <select id="getSize" resultType="int">
+        SELECT
+            COUNT(code)
+        FROM
+            tb_student
+        WHERE
+            is_delete = 0
+        <if test="keyword != null and keyword != ''">
+            AND name LIKE CONCAT('%',CONCAT(#{keyword},'%'))
+            OR code LIKE CONCAT('%',CONCAT(#{keyword},'%'))
+        </if>
+    </select>
+
+    <select id="getCodeByCodeOrNameOrDeptName" resultType="com.hmdp.entity.Student"
+        parameterType="com.hmdp.command.QueryDailyRecordByKeyAndPageCommand">
+        SELECT code, name, class_code, sex, phone_number, id_card,
+               address,emergency_contact, emergency_contact_phone, dept_code
+        FROM tb_student
+        WHERE
+            is_delete = 0
+        <if test=" key != null and key != '' ">
+            AND (name = #{key}
+            OR code = #{key}
+            OR dept_code = (select code from dept where name = #{key}) )
+        </if>
+    </select>
+
+    <select id="checkStudent" resultType="java.lang.Integer" parameterType="com.hmdp.command.StudentCheckCommand">
+        SELECT
+            count(code)
+        FROM
+            tb_student
+        WHERE
+            name = #{name} AND code = #{code} AND is_delete = 0
+    </select>
+    <select id="checkIsExist" resultType="java.lang.Integer">
+        SELECT
+            count(code)
+        FROM
+            tb_student
+        WHERE
+            code = #{code} AND is_delete = 0
+    </select>
+
+    <select id="queryDetailByCode" resultType="com.hmdp.entity.Student"
+        parameterType="com.hmdp.command.QueryDailyRecordDetailByCodeCommand">
+        SELECT code, name, class_code, sex, phone_number, id_card,
+               address,emergency_contact, emergency_contact_phone, dept_code
+        FROM tb_student
+        WHERE
+            is_delete = 0
+        <if test=" code != null ">
+            AND code = #{code}
+        </if>
+    </select>
+
+    <select id="queryNameByCode" resultType="java.lang.String">
+        select name from tb_student where code = #{code} and is_delete = 0
+    </select>
+
+    <select id="selectClassList" resultType="java.lang.String">
+        SELECT
+            code
+        FROM
+            studentclass
+        WHERE
+            is_delete = 0
+    </select>
+
+    <select id="queryPhoneByCode" resultType="java.lang.String">
+        select phone_number from tb_student where code = #{code} and is_delete = 0
+    </select>
+    <select id="selectStudentClassList"
+            resultType="com.hmdp.entity.StudentClass">
+        SELECT
+            code AS code,
+            name AS name
+        FROM
+            class
+        WHERE
+            is_delete = 0
+    </select>
+</mapper>

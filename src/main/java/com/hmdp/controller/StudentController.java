@@ -46,7 +46,7 @@ public class StudentController {
 
   @GetMapping("/select")
   public  Result getStudent(String code){
-    return studentService.selectStudent(code);
+    return Result.ok(studentService.selectStudent(code));
   }
 
 

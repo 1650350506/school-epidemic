@@ -1,10 +1,12 @@
 package com.hmdp.mapper;
 
-//import com.baomidou.mybatisplus.annotation.SqlParser;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.hmdp.command.IsolatePersonnelQueryCommand;
 import com.hmdp.entity.IsolatePersonnel;
-import java.util.List;
+import com.hmdp.vo.IsolatepersonnelVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 ///**
@@ -19,15 +21,15 @@ import org.apache.ibatis.annotations.Select;
 //
 @Mapper
 public interface IsolatePersonnelMapper extends BaseMapper<IsolatePersonnel> {
-//
-///**
-// * @Description: 隔离人员查询
-// * @Author: zcy
-// * @Date: 2022/8/8 10:30
-// * @Param: [command]
-// * @Return: java.util.List<com.tianque.grid.ce2.constant.infrastructure.server.vo.riskpersonnel.IsolatepersonnelVO>
-// */
-//  List<IsolatepersonnelVO> queryPageIsolate(IsolatePersonnelQueryCommand command);
+
+/**
+ * @Description: 隔离人员查询
+ * @Author: zcy
+ * @Date: 2022/8/8 10:30
+ * @Param: [command]
+ * @Return: java.util.List<com.tianque.grid.ce2.constant.infrastructure.server.vo.riskpersonnel.IsolatepersonnelVO>
+ */
+  IPage<IsolatepersonnelVO> queryPageIsolate(IPage<IsolatepersonnelVO> page,@Param("command") IsolatePersonnelQueryCommand command);
 
   /**
    * @Description: 查询出昨天新增隔离人员
@@ -36,7 +38,7 @@ public interface IsolatePersonnelMapper extends BaseMapper<IsolatePersonnel> {
    * @Param: []
    * @Return: java.lang.Integer
    */
-  @Select("select count(id) from isolate_personnel where to_days(now()) - to_days(startTime) <= 1  AND is_delete = 0 and state= 1 ")
+  @Select("select count(id) from isolate_personnel where to_days(now()) - to_days(start_time) <= 1  AND is_delete = 0 and state= 1 ")
   Integer addIsolateAnaly();
 
   /**
@@ -46,7 +48,7 @@ public interface IsolatePersonnelMapper extends BaseMapper<IsolatePersonnel> {
    * @Param: []
    * @Return: java.lang.Integer
    */
-  @Select("select count(id) from isolate_personnel where to_days(now()) - to_days(startTime) <= 1  AND is_delete = 0 and state= 2")
+  @Select("select count(id) from isolate_personnel where to_days(now()) - to_days(start_time) <= 1  AND is_delete = 0 and state= 2")
   Integer relieveIsolateAnaly();
 
   /**
@@ -56,7 +58,7 @@ public interface IsolatePersonnelMapper extends BaseMapper<IsolatePersonnel> {
    * @Param: [command]
    * @Return: java.util.List<java.util.Map < java.lang.String, java.lang.Integer>>
    */
-  @Select(" SELECT count(code) FROM isolate_personnel WHERE state = 1 and  startTime like concat(#{command},'%')")
+  @Select(" SELECT count(code) FROM isolate_personnel WHERE state = 1 and  start_time like concat(#{command},'%')")
   Integer IsolateAnaly(String command);
 
   /**

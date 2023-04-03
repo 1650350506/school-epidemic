@@ -1,6 +1,8 @@
 package com.hmdp.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -16,6 +18,11 @@ import lombok.NoArgsConstructor;
 @TableName("isolate_personnel")
 @ApiModel("隔离人员表")
 public class IsolatePersonnel {
+  @TableId(
+      value = "id",
+      type = IdType.ASSIGN_ID
+  )
+  private Long id;
 
   @ApiModelProperty(value = "统一编号")
   private String code;
