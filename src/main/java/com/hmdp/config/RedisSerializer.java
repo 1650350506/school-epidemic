@@ -8,6 +8,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter.Feature;
 import java.nio.charset.StandardCharsets;
 import org.springframework.data.redis.serializer.SerializationException;
+import org.springframework.stereotype.Component;
 
 /**
  * @ProjectName: school-epidemic
@@ -18,6 +19,7 @@ import org.springframework.data.redis.serializer.SerializationException;
  * @Date: 2023/4/4 0:45
  * @Version: 1.0
  */
+@Component
 public class RedisSerializer extends GenericFastJsonRedisSerializer {
 
   @Override

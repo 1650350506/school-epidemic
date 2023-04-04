@@ -14,6 +14,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.extra.cglib.CglibUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -58,8 +59,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.annotation.Resource;
+
+import org.reflections.serializers.Serializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -110,6 +114,7 @@ public class RiskPersonnelServiceImpl extends
     String code = command.getCode();
     //判断体温是否异常
     if (temperature == 38f) {
+      redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<Object>(Object.class));
       //将学号作为键值查询然后自增一
       redisTemplate.opsForHash().increment(TEMPERATURE_ABNORMALITY_KEY, code, 1);
       //查询对应的学号的异常次数

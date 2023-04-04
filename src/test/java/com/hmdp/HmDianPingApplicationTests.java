@@ -19,8 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class HmDianPingApplicationTests {
   
   public static final String a="hhhh";
-  @Autowired
-  private static ceshi S;
+
   private static final int SIZE = 6;
   private static final String SYMBOL = "*";
 

@@ -9,7 +9,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.UUID;
 
 @Slf4j
@@ -35,8 +39,9 @@ public class UploadController {
     }
 
     @GetMapping("/blog/delete")
-    public Result deleteBlogImg(@RequestParam("name") String filename) {
+    public Result deleteBlogImg(@RequestParam("name") String filename) throws IOException {
         File file = new File(SystemConstants.IMAGE_UPLOAD_DIR, filename);
+
         if (file.isDirectory()) {
             return Result.fail("错误的文件名称");
         }
