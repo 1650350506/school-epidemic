@@ -87,8 +87,7 @@ public class RiskPersonnelController {
   @ApiOperation("解除隔离人员")
   public Result registerIsolatePersonnel(
       @Valid  IsolatePersonnelModifyCommand command) {
-    return null;
-    //return Result.ok(riskPersonnelService.modifyIsolatePersonnel(command));
+    return Result.ok(riskPersonnelService.modifyIsolatePersonnel(command));
   }
 
   @PutMapping("/notice")
@@ -96,8 +95,7 @@ public class RiskPersonnelController {
   public Result noticeIsolatePersonnel(
       IsolatePersonnelModifyCommand command) {
 
-    return null;
-    //return riskPersonnelService.noticeIsolatePersonnel(command);
+    return riskPersonnelService.noticeIsolatePersonnel(command);
   }
 
   @PutMapping("/treatment")

@@ -1,6 +1,7 @@
 package com.hmdp.service;
 
 import com.hmdp.command.IsolatePersonnelCreateCommand;
+import com.hmdp.command.IsolatePersonnelModifyCommand;
 import com.hmdp.command.IsolatePersonnelQueryCommand;
 import com.hmdp.command.IsolationRecordCreateCommand;
 import com.hmdp.command.IsolationRecordQueryCommand;
@@ -49,4 +50,8 @@ public interface RiskPersonnelService {
   Result getOutSchoolByCode(StudentJourneyByCodeCommand command);
 
   Integer addStudent();
+
+  boolean modifyIsolatePersonnel(IsolatePersonnelModifyCommand command);
+
+  Result noticeIsolatePersonnel(IsolatePersonnelModifyCommand command);
 }

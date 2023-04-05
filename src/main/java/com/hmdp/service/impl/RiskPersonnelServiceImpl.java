@@ -17,6 +17,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -29,6 +30,7 @@ import com.hmdp.command.IsolationRecordQueryCommand;
 import com.hmdp.command.StudentCheckCommand;
 import com.hmdp.command.StudentJourneyByCodeCommand;
 import com.hmdp.command.StudentQueryPageBaseCommand;
+import com.hmdp.constant.IsolationStatus;
 import com.hmdp.dto.Result;
 import com.hmdp.entity.Dept;
 import com.hmdp.entity.IsolateDetails;
@@ -45,6 +47,7 @@ import com.hmdp.service.RiskPersonnelService;
 import com.hmdp.service.StudentClassService;
 import com.hmdp.service.StudentService;
 import com.hmdp.service.WorkPersonService;
+import com.hmdp.utils.BusinessException;
 import com.hmdp.utils.CommonUtil;
 import com.hmdp.vo.IsolatepersonnelVO;
 import com.hmdp.vo.IsolaterecordVO;
@@ -53,6 +56,7 @@ import com.hmdp.vo.epPersonnelVO;
 import java.io.File;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -114,11 +118,10 @@ public class RiskPersonnelServiceImpl extends
     String code = command.getCode();
     //判断体温是否异常
     if (temperature == 38f) {
-      redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<Object>(Object.class));
       //将学号作为键值查询然后自增一
-      redisTemplate.opsForHash().increment(TEMPERATURE_ABNORMALITY_KEY, code, 1);
+      redisTemplate.opsForValue().increment(TEMPERATURE_ABNORMALITY_KEY+code, 1);
       //查询对应的学号的异常次数
-      Object o = redisTemplate.opsForHash().get(TEMPERATURE_ABNORMALITY_KEY, code);
+      Object o = redisTemplate.boundValueOps(TEMPERATURE_ABNORMALITY_KEY+code).get(0,-1);
       int count = Integer.parseInt(String.valueOf(o));
       //如果连续异常次数大于二则将该学生加入治疗
       if (count > 2) {
@@ -128,7 +131,7 @@ public class RiskPersonnelServiceImpl extends
       }
     } else {
       //如果体温不异常则将学号对应的值设为一
-      redisTemplate.opsForHash().put(TEMPERATURE_ABNORMALITY_KEY, code, 1);
+      redisTemplate.opsForValue().set(TEMPERATURE_ABNORMALITY_KEY+code, 1);
     }
     //判断核酸是否异常，异常则则将该学生加入治疗
     if (command.getNucleicAcidKey().equals(POSITIVE.getNumber())) {
@@ -161,11 +164,13 @@ public class RiskPersonnelServiceImpl extends
     LambdaQueryWrapper<IsolatePersonnel> queryWrapper =new LambdaQueryWrapper<>();
     queryWrapper.eq(IsolatePersonnel::getCode, code).ne(IsolatePersonnel::getState,THREE.getNumber());
     IsolatePersonnel isolatePersonnel1 = isolatePersonnelService.getOne(queryWrapper);
-    if(isolatePersonnel1!=null){
-      throw new RuntimeException("查詢錯誤");
+    if(ObjectUtil.isEmpty(isolatePersonnel1)){
+      int insert = isolatePersonnelMapper.insert(isolatePersonnel);
+    } else {
+      throw new BusinessException("隔离人员已经被添加");
     }
-    int insert = isolatePersonnelMapper.insert(isolatePersonnel);
-    return Result.ok(insert);
+
+    return Result.ok(true);
 
   }
   /**
@@ -235,14 +240,14 @@ public class RiskPersonnelServiceImpl extends
       isolatepersonnelVO.setClassname(className);
       String code1 = isolatepersonnelVO.getCode();
       QueryWrapper<IsolateDetails> queryWrapper = new QueryWrapper<>();
-      queryWrapper.eq("code", code1).orderBy(true, false, "create_date ")
+      queryWrapper.eq("code", code1).orderBy(true, false, "nucleic_acid_time")
           .last("limit 1");
       /*如果有隔离记录就拿到最新的记录*/
       IsolateDetails isolateDetails = isolateDetailsService.getOne(queryWrapper);
       /*判断隔离记录是否为空然后把核酸和体温加入VO类*/
       if (isolateDetails != null) {
         Integer nucleicAcidKey = isolateDetails.getNucleicAcidKey();
-        Float temperature = isolateDetails.getTemperature();
+        float temperature = isolateDetails.getTemperature();
         isolatepersonnelVO.setNucleicacidkey(nucleicAcidKey);
         isolatepersonnelVO.setTemperature(temperature);
       }
@@ -404,6 +409,23 @@ public class RiskPersonnelServiceImpl extends
     return key;
   }
 
+  @Override
+  public boolean modifyIsolatePersonnel(IsolatePersonnelModifyCommand command) {
+    String code = command.getCode();
+
+    LambdaQueryWrapper<IsolatePersonnel> updateWrapper = new LambdaQueryWrapper<>();
+    //转换格式
+    IsolatePersonnel isolatePersonnel = new IsolatePersonnel();
+    //将对应的隔离人员转为隔离结束
+    updateWrapper.eq(IsolatePersonnel::getCode, command.getCode());
+    isolatePersonnel.setState(THREE.getNumber());
+    boolean update = isolatePersonnelService.update(isolatePersonnel, updateWrapper);
+    //将隔离结束的人的缓存清零
+    if(update)
+    redisTemplate.opsForValue().set(TEMPERATURE_ABNORMALITY_KEY+code, "0");
+    return update;
+  }
+
   /**
    * @Description: 解除隔离人员
    * @Author: zcy
@@ -474,9 +496,28 @@ public class RiskPersonnelServiceImpl extends
    * @Return: java.lang.Long
    */
   @Transactional(rollbackFor = Exception.class)
-  public Long noticeIsolatePersonnel(IsolatePersonnelModifyCommand command) {
-    return null;
-    //return isolatepersonDomainService.noticeIsolatePersonnel(command);
+  public Result noticeIsolatePersonnel(IsolatePersonnelModifyCommand command) {
+    LambdaQueryWrapper<IsolatePersonnel> updateWrapper = new LambdaQueryWrapper<>();
+    IsolatePersonnel isolatePerson = CglibUtil.copy(command, IsolatePersonnel.class);
+    //设置相应的时间模式
+    SimpleDateFormat format = new SimpleDateFormat(TIME_COMMON);
+    Calendar ca = Calendar.getInstance();
+    //得到最新时间作为隔离开始时间
+    LocalDateTime now = LocalDateTime.now();
+    ca.setTime(Timestamp.valueOf(now));
+    //给隔离开始时间加十四天得到隔离结束时间
+    ca.add(Calendar.DATE, 14);
+    Date time = ca.getTime();
+    String endTime = format.format(time);
+    IsolatePersonnel isolatePersonnel = new IsolatePersonnel();
+    //将隔离开始时间和结束时间和隔离状态放入对应的实体类
+    isolatePersonnel.setStartTime(Timestamp.valueOf(now));
+    isolatePersonnel.setEndTime(Timestamp.valueOf(endTime));
+    isolatePersonnel.setState(IsolationStatus.TWO.getNumber());
+    updateWrapper.eq(IsolatePersonnel::getCode, command.getCode()).ne(IsolatePersonnel::getState,THREE.getNumber());
+    //将对应的待隔离人员到已隔离
+    boolean update = isolatePersonnelService.update(isolatePersonnel, updateWrapper);
+    return Result.ok(update);
   }
 
   /**

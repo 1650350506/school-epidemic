@@ -32,7 +32,7 @@ public class IsolateDetails {
   private Integer nucleicAcidKey;
 
   @ApiModelProperty(value = "体温",required = true)
-  private Float temperature;
+  private float temperature;
 
   @ApiModelProperty(value = "防疫人员编号",required = true)
   private String protector;
